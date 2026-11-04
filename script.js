@@ -1,5 +1,5 @@
 'use strict';
-const albums=[{id:'cute',name:'Cute',cover:6,photos:[{id:7,name:'Một chút dễ thương'},{id:4,name:'Ngày vui'},{id:2,name:'Khoảnh khắc nhỏ'},{id:10,name:'Tự do một chút'},{id:5,name:'Một ngày đặc biệt'},{id:6,name:'Hoa dành cho UNNI'}]},{id:'elegance',name:'Elegance',cover:9,photos:[{id:9,name:'Blue rose'}]},{id:'fierce',name:'Fierce',cover:1,photos:[{id:3,name:'Red mood'},{id:8,name:'Monochrome'},{id:1,name:'Dark silhouette'},{id:12,name:'Soft light'}]}];
+const albums=[{id:'cute',name:'Cute',cover:10,photos:[{id:7,name:'Một chút dễ thương'},{id:4,name:'Ngày vui'},{id:2,name:'Khoảnh khắc nhỏ'},{id:10,name:'Tự do một chút'},{id:5,name:'Một ngày đặc biệt'},{id:6,name:'Hoa dành cho UNNI'}]},{id:'elegance',name:'Elegance',cover:9,photos:[{id:9,name:'Blue rose'}]},{id:'fierce',name:'Fierce',cover:1,photos:[{id:3,name:'Red mood'},{id:8,name:'Monochrome'},{id:1,name:'Dark silhouette'},{id:12,name:'Soft light'}]}];
 const src=id=>`assets/photo-${String(id).padStart(2,'0')}.webp`;
 const grid=document.querySelector('#photos'),panel=document.querySelector('#album-panel'),albumGrid=document.querySelector('#albums'),reduced=matchMedia('(prefers-reduced-motion: reduce)');
 let activeAlbum=null,albumTrigger=null;
@@ -20,12 +20,16 @@ let scheduled=false;function progress(){const max=document.documentElement.scrol
 document.addEventListener('pointerdown',e=>{if(reduced.matches||e.target.closest('video,dialog'))return;const r=document.createElement('span');r.className='ripple';r.style.left=e.clientX+'px';r.style.top=e.clientY+'px';document.body.appendChild(r);r.addEventListener('animationend',()=>r.remove())});
 const hero=document.querySelector('.hero'),heroImage=document.querySelector('.hero-image');let tiltFrame=0;hero.addEventListener('pointermove',e=>{if(reduced.matches||e.pointerType!=='mouse'||innerWidth<601)return;cancelAnimationFrame(tiltFrame);tiltFrame=requestAnimationFrame(()=>{const r=hero.getBoundingClientRect(),x=(e.clientX-r.left-r.width/2)/r.width,y=(e.clientY-r.top-r.height/2)/r.height;heroImage.style.transform=`rotateY(${x*4}deg) rotateX(${-y*3}deg) scale(1.012)`})});hero.addEventListener('pointerleave',()=>{cancelAnimationFrame(tiltFrame);heroImage.style.transform='none'});
 const wipe=document.querySelector('.scene-wipe');let navigating=false;document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{const destination=document.querySelector(a.getAttribute('href'));if(!destination||reduced.matches)return;e.preventDefault();if(navigating)return;navigating=true;wipe.classList.add('active');setTimeout(()=>{destination.scrollIntoView({behavior:'instant',block:'start'});history.replaceState(null,'',a.getAttribute('href'));progress()},340);setTimeout(()=>{wipe.classList.remove('active');navigating=false},720)}));
-const siteMusic=new Audio('assets/site-music.mp3');
+const siteMusic=document.createElement('audio');
 siteMusic.id='site-music';
 siteMusic.setAttribute('aria-hidden','true');
 siteMusic.loop=true;
 siteMusic.preload='none';
 siteMusic.volume=.18;
+const musicSource=document.createElement('source');
+musicSource.src=new URL('assets/site-music.mp3',document.baseURI).href;
+musicSource.type='audio/mpeg';
+siteMusic.appendChild(musicSource);
 document.body.appendChild(siteMusic);
 const musicButton=document.createElement('button');
 musicButton.type='button';
@@ -41,16 +45,25 @@ function updateMusicControl(){
   const playing=!siteMusic.paused;
   musicButton.setAttribute('aria-pressed',String(playing));
   const failed=Boolean(musicButton.dataset.error);
+  const blocked=Boolean(musicButton.dataset.blocked);
   musicButton.setAttribute('aria-label',failed?'Thử phát nhạc nền lại':playing?'Tạm dừng nhạc nền':'Phát nhạc nền');
-  musicButton.querySelector('.music-control-label').textContent=failed?'Lỗi âm thanh':playing?'Đang phát':'Nhạc nền';
+  musicButton.querySelector('.music-control-label').textContent=failed?'Lỗi âm thanh':blocked?'Nhấn để phát':playing?'Đang phát':'Nhạc nền';
   musicButton.classList.toggle('is-playing',playing);
 }
 async function playSiteMusic(){
   try{
     await siteMusic.play();
     musicButton.removeAttribute('data-error');
+    musicButton.removeAttribute('data-blocked');
+    musicButton.removeAttribute('title');
   }catch(error){
     siteMusic.pause();
+    if(error.name==='NotAllowedError'){
+      musicButton.dataset.blocked='true';
+      musicButton.title='Trình duyệt chặn tự động phát. Nhấn để phát nhạc.';
+      updateMusicControl();
+      return;
+    }
     musicButton.dataset.error='true';
     musicButton.title='Không thể phát nhạc nền. Nhấn để thử lại.';
     updateMusicControl();
@@ -61,6 +74,7 @@ musicButton.addEventListener('click',()=>{
   if(!siteMusic.paused){resumeMusicAfterVideo=false;siteMusic.pause();return}
   if([...document.querySelectorAll('video')].some(video=>!video.paused&&!video.ended))return;
   musicButton.removeAttribute('data-error');
+  musicButton.removeAttribute('data-blocked');
   musicButton.removeAttribute('title');
   playSiteMusic();
 });
