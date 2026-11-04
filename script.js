@@ -106,6 +106,33 @@ document.querySelectorAll('video').forEach(v=>{
   v.addEventListener('pause',syncMusicWithVideos);
   v.addEventListener('ended',syncMusicWithVideos);
 });
+const videoDialog=document.querySelector('#video-dialog'),videoPlayer=document.querySelector('#video-player');
+let videoTrigger=null;
+document.querySelectorAll('.video-card-trigger').forEach(button=>button.addEventListener('click',()=>{
+  videoTrigger=button;
+  videoPlayer.src=new URL(button.dataset.video,document.baseURI).href;
+  videoPlayer.poster=new URL(button.dataset.poster,document.baseURI).href;
+  videoDialog.showModal();
+  document.body.classList.add('modal-open');
+  videoPlayer.play().catch(error=>{
+    if(error.name!=='AbortError')console.error('Không thể phát video.',error);
+  });
+}));
+function closeVideoDialog(){
+  videoDialog.close();
+}
+videoDialog.querySelector('.video-dialog-close').addEventListener('click',closeVideoDialog);
+videoDialog.addEventListener('click',event=>{
+  if(event.target===videoDialog)closeVideoDialog();
+});
+videoDialog.addEventListener('close',()=>{
+  videoPlayer.pause();
+  videoPlayer.removeAttribute('src');
+  videoPlayer.removeAttribute('poster');
+  videoPlayer.load();
+  document.body.classList.toggle('modal-open',panel.open||box.open);
+  videoTrigger?.focus({preventScroll:true});
+});
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden&& !siteMusic.paused){resumeMusicAfterVideo=false;siteMusic.pause()}
 });

@@ -161,3 +161,16 @@ footer{border-top-color:#724530}
 .intro-skip{width:46px;height:46px;display:grid;place-items:center;padding:0;border-radius:50%;font-size:19px}
 @media(max-width:600px){.intro-skip{width:44px;height:44px;padding:0;font-size:18px}}
 @media(prefers-reduced-motion:reduce){.music-control.is-playing .music-control-icon{animation:none}}
+.video-card-trigger{display:block;width:100%;padding:0;border:0;background:transparent;text-align:left}
+.video-card-trigger .video-wrap{position:relative;display:block}
+.video-card-trigger .video-wrap img{width:100%;height:100%;object-fit:cover;transition:transform .7s,filter .5s}
+.video-card-trigger:hover .video-wrap img{transform:scale(1.04);filter:brightness(.82)}
+.video-play{position:absolute;z-index:1;left:50%;top:50%;display:grid;place-items:center;width:58px;height:58px;padding-left:4px;border:1px solid #ffffffb8;border-radius:50%;background:#160b09a8;color:#fff;font-size:18px;transform:translate(-50%,-50%);box-shadow:0 0 30px #0008;transition:background .25s,transform .25s}
+.video-card-trigger:hover .video-play{background:var(--red);transform:translate(-50%,-50%) scale(1.08)}
+.video-dialog{position:relative;width:min(92vw,1100px);max-width:none;max-height:92svh;margin:auto;padding:52px 0 0;border:1px solid #754a36;background:#080605;box-shadow:0 24px 100px #000c;overflow:visible}
+.video-dialog::backdrop{background:#080504e8;backdrop-filter:blur(12px)}
+.video-dialog video{display:block;width:100%;max-height:calc(92svh - 54px);aspect-ratio:16/9;background:#000;object-fit:contain}
+.video-dialog-close{position:absolute;top:7px;right:10px;z-index:2;width:38px;height:38px;border:1px solid #85523a;border-radius:50%;background:#21120c;color:#f5ede4;font-size:25px;line-height:1}
+.video-dialog-close:hover{background:#70351e}
+@media(max-width:700px){.video-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 12px}.video-grid .film:last-child{grid-column:auto;max-width:none;justify-self:stretch}.film:first-child{grid-column:1/-1}.video-card-trigger .video-wrap{height:auto;aspect-ratio:4/5}.film:first-child .video-card-trigger .video-wrap{aspect-ratio:16/9}.film-caption{gap:8px;padding:12px 2px}.film-caption h3{font-size:11px}.film-caption span{font-size:8px}.video-play{width:48px;height:48px;font-size:15px}.video-dialog{width:100vw;max-width:none;max-height:100svh;padding-top:48px;border-right:0;border-left:0}.video-dialog video{max-height:calc(100svh - 50px);aspect-ratio:auto}}
+@media(prefers-reduced-motion:reduce){.video-card-trigger .video-wrap img{transition:none}}
